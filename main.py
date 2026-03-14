@@ -5,11 +5,15 @@ load_dotenv(".env")
 
 from init import log, routes, app, log
 from src.cors import cors
-from os import getenv
+from os import getenv, environ
 from aiohttp import web
 from asyncio import new_event_loop, set_event_loop, Future
 from src.constants import *
 
+for key in [APPLICATION_MODE, SERVER_PORT, OPENNODE_API_KEY, OPENNODE_API_URL, CALLBACK_URL]:
+    if key not in environ:
+        log.crit(f"{key} is missing")
+        exit(1)
 
 async def main():
     log.info("Démarrage du serveur...")
