@@ -1,0 +1,85 @@
+// Does not exists. Ignore FK. Belongs to another service
+Table users {
+  id uuid [pk, default: `gen_random_uuid()`]
+  created_at timestamptz [not null, default: `now()`]
+}
+
+// Historique des taux. Le taux actif est celui avec le valid_from le plus récent <= NOW().
+// On n'update jamais une ligne, on INSERT un nouveau taux.
+Table subscription_rates {
+  id uuid [pk, default: `gen_random_uuid()`]
+  sats_per_day integer [not null, note: 'Coût en satoshis pour 1 jour d\'abonnement']
+  valid_from timestamptz [not null, default: `now()`, note: 'Date d\'entrée en vigueur']
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    valid_from
+  }
+}
+
+Table subscriptions {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [not null, ref: > users.id]
+  started_at timestamptz [null, note: 'NULL tant que jamais payé']
+  expires_at timestamptz [null, note: 'NULL tant que jamais payé']
+  status text [not null, default: 'inactive', note: 'inactive | active | expired']
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    user_id
+    status
+    expires_at
+  }
+}
+
+Table lightning_invoices {
+  id uuid [pk, default: `gen_random_uuid()`]
+  subscription_id uuid [not null, ref: > subscriptions.id]
+  opennode_charge_id text [not null, unique]
+  payment_request text [not null, note: 'BOLT11 invoice']
+  amount_sats bigint [not null]
+
+  // Snapshot du taux au moment de la création — source de vérité pour la durée
+  rate_id uuid [not null, ref: > subscription_rates.id]
+  sats_per_day integer [not null, note: 'Copie du taux au moment de la création']
+  duration_days integer [not null, note: 'FLOOR(amount_sats / sats_per_day), calculé une fois pour toutes']
+
+  status text [not null, default: 'pending', note: 'pending | paid | expired | cancelled']
+  expires_at timestamptz [not null]
+  paid_at timestamptz [null]
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    opennode_charge_id
+    subscription_id
+  }
+}
+
+Table subscription_payments {
+  id uuid [pk, default: `gen_random_uuid()`]
+  subscription_id uuid [not null, ref: > subscriptions.id]
+  invoice_id uuid [not null, unique, ref: - lightning_invoices.id]
+
+  // Plus besoin de recalculer quoi que ce soit — tout est lu depuis l'invoice
+  amount_sats bigint [not null]
+  duration_days integer [not null]
+  extended_from timestamptz [not null]
+  extended_until timestamptz [not null]
+
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table opennode_webhook_logs {
+  id uuid [pk, default: `gen_random_uuid()`]
+  opennode_charge_id text [not null]
+  payload jsonb [not null]
+  status text [not null]
+  processed boolean [not null, default: false]
+  error_message text [null]
+  received_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    opennode_charge_id
+  }
+}

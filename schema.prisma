@@ -1,0 +1,88 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider             = "prisma-client-py"
+  interface            = "asyncio"
+  recursive_type_depth = 5
+}
+
+model SubscriptionRate {
+  id         String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  satsPerDay Int                @map("sats_per_day")
+  validFrom  DateTime           @default(now()) @map("valid_from") @db.Timestamptz()
+  createdAt  DateTime           @default(now()) @map("created_at") @db.Timestamptz()
+  invoices   LightningInvoice[]
+
+  @@index([validFrom])
+  @@map("subscription_rates")
+}
+
+model Subscription {
+  id        String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String                @map("user_id") @db.Uuid
+  startedAt DateTime?             @map("started_at") @db.Timestamptz()
+  expiresAt DateTime?             @map("expires_at") @db.Timestamptz()
+  status    String                @default("inactive")
+  createdAt DateTime              @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime              @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  invoices  LightningInvoice[]
+  payments  SubscriptionPayment[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([expiresAt])
+  @@map("subscriptions")
+}
+
+model LightningInvoice {
+  id               String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  subscriptionId   String               @map("subscription_id") @db.Uuid
+  opennodeChargeId String               @unique @map("opennode_charge_id")
+  paymentRequest   String               @map("payment_request")
+  amountSats       BigInt               @map("amount_sats")
+  rateId           String               @map("rate_id") @db.Uuid
+  satsPerDay       Int                  @map("sats_per_day")
+  durationDays     Int                  @map("duration_days")
+  status           String               @default("pending")
+  expiresAt        DateTime             @map("expires_at") @db.Timestamptz()
+  paidAt           DateTime?            @map("paid_at") @db.Timestamptz()
+  createdAt        DateTime             @default(now()) @map("created_at") @db.Timestamptz()
+  subscription     Subscription         @relation(fields: [subscriptionId], references: [id])
+  rate             SubscriptionRate     @relation(fields: [rateId], references: [id])
+  payment          SubscriptionPayment?
+
+  @@index([opennodeChargeId])
+  @@index([subscriptionId])
+  @@map("lightning_invoices")
+}
+
+model SubscriptionPayment {
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  subscriptionId String           @map("subscription_id") @db.Uuid
+  invoiceId      String           @unique @map("invoice_id") @db.Uuid
+  amountSats     BigInt           @map("amount_sats")
+  durationDays   Int              @map("duration_days")
+  extendedFrom   DateTime         @map("extended_from") @db.Timestamptz()
+  extendedUntil  DateTime         @map("extended_until") @db.Timestamptz()
+  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz()
+  subscription   Subscription     @relation(fields: [subscriptionId], references: [id])
+  invoice        LightningInvoice @relation(fields: [invoiceId], references: [id])
+
+  @@map("subscription_payments")
+}
+
+model OpennodeWebhookLog {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  opennodeChargeId String   @map("opennode_charge_id")
+  payload          Json
+  status           String
+  processed        Boolean  @default(false)
+  errorMessage     String?  @map("error_message")
+  receivedAt       DateTime @default(now()) @map("received_at") @db.Timestamptz()
+
+  @@index([opennodeChargeId])
+  @@map("opennode_webhook_logs")
+}
