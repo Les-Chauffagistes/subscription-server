@@ -1,19 +1,8 @@
-from typing import cast
-from dotenv import load_dotenv
-
-load_dotenv(".env")
-
-from init import log, routes, app, log
+from init import routes, app, log
 from src.cors import cors
-from os import getenv, environ
+from src.settings import settings
 from aiohttp import web
 from asyncio import new_event_loop, set_event_loop, Future
-from src.constants import *
-
-for key in [APPLICATION_MODE, SERVER_PORT, OPENNODE_API_KEY, OPENNODE_API_URL, CALLBACK_URL]:
-    if key not in environ:
-        log.crit(f"{key} is missing")
-        exit(1)
 
 async def main():
     log.info("Démarrage du serveur...")
@@ -21,9 +10,9 @@ async def main():
     runner = web.AppRunner(app)
     await runner.setup()
 
-    site = web.TCPSite(runner, "0.0.0.0", int(cast(str, getenv(SERVER_PORT))))
+    site = web.TCPSite(runner, "0.0.0.0", settings.server_port)
     await site.start()
-    log.info(f"Serveur interne en ligne sur localhost:{getenv(SERVER_PORT)}")
+    log.info(f"Serveur interne en ligne sur localhost:{settings.server_port}")
 
     await Future()
 

@@ -22,16 +22,16 @@ model SubscriptionRate {
 
 model Subscription {
   id        String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId    String                @map("user_id") @db.Uuid
-  startedAt DateTime?             @map("started_at") @db.Timestamptz()
-  expiresAt DateTime?             @map("expires_at") @db.Timestamptz()
-  status    String                @default("inactive")
-  createdAt DateTime              @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt DateTime              @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
-  invoices  LightningInvoice[]
-  payments  SubscriptionPayment[]
+  poolAddress String                @unique @map("pool_address")
+  startedAt   DateTime?             @map("started_at") @db.Timestamptz()
+  expiresAt   DateTime?             @map("expires_at") @db.Timestamptz()
+  status      String                @default("inactive")
+  createdAt   DateTime              @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime              @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  invoices    LightningInvoice[]
+  payments    SubscriptionPayment[]
 
-  @@index([userId])
+  @@index([poolAddress])
   @@index([status])
   @@index([expiresAt])
   @@map("subscriptions")
@@ -43,6 +43,7 @@ model LightningInvoice {
   opennodeChargeId String               @unique @map("opennode_charge_id")
   paymentRequest   String               @map("payment_request")
   amountSats       BigInt               @map("amount_sats")
+  payerAddress     String?              @map("payer_address")
   rateId           String               @map("rate_id") @db.Uuid
   satsPerDay       Int                  @map("sats_per_day")
   durationDays     Int                  @map("duration_days")
@@ -56,6 +57,7 @@ model LightningInvoice {
 
   @@index([opennodeChargeId])
   @@index([subscriptionId])
+  @@index([payerAddress])
   @@map("lightning_invoices")
 }
 

@@ -1,12 +1,12 @@
 from json import JSONDecodeError
 from ...v1.errors import INVALID_FIELDS, JSON_PARSE_ERROR
 from ...v1.services.invoice import process_invoice
-from ..models.opennode import InvoiceWebhook
+from ..models.InvoiceWebhook import InvoiceWebhook
 from ..app import routes
 from aiohttp.web_request import Request
 from aiohttp.web import HTTPNotFound, HTTPOk, HTTPBadRequest
 
-@routes.post("/webhook/openapi")
+@routes.post("/webhook/opennode")
 async def handle_webhook(request: Request):
     try:
         raw_payload = await request.json()

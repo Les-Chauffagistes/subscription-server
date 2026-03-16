@@ -1,0 +1,30 @@
+{
+    "data": {
+        "id": "755ce2f1-83d4-42aa-9c50-3ef430e3eab6",
+        "description": "Payer chez Chauffagistes",
+        "desc_hash": false,
+        "created_at": 1773505756,
+        "status": "unpaid",
+        "amount": 500,
+        "callback_url": "https://premium.swakraft.fr/webhook/opennode",
+        "success_url": null,
+        "hosted_checkout_url": "https://checkout.opennode.com/755ce2f1-83d4-42aa-9c50-3ef430e3eab6",
+        "order_id": "e8ca195b9eff5",
+        "currency": "BTC",
+        "source_fiat_value": 500,
+        "fiat_value": 0.31,
+        "auto_settle": false,
+        "notif_email": null,
+        "address": "3CEmmthqWSoGMWde8ZLcYv9yFpKdEYMoGP",
+        "metadata": {},
+        "chain_invoice": {
+            "address": "3CEmmthqWSoGMWde8ZLcYv9yFpKdEYMoGP"
+        },
+        "uri": "bitcoin:3CEmmthqWSoGMWde8ZLcYv9yFpKdEYMoGP?amount=0.000005&label=Payer+chez+Chauffagistes&lightning=lnbc5u1p5mtrxupp503addlzwztqjxepevt8zwzd839g8hsm9lnu2zpz4mmhrjxs7ws8qdp82pshjetjyp3kset6yppksct4venxzemfwd6x2uccqzysxqyz5vqsp50g8kzcw90cgt7wrpntncql5vtqnwq3eufql8zv2dg9936g4qfjus9qxpqysgq6gmnd3wvhslfrc3mksejpm55sfw3ldk3qw9zukrqdh0kpa4gruc4lu72av0l96mt24jevrxnrd4qj02qnm5tt5dra4eusyjxz2u4prgpxhlfmx",
+        "ttl": 1440,
+        "lightning_invoice": {
+            "expires_at": 1773592156,
+            "payreq": "lnbc5u1p5mtrxupp503addlzwztqjxepevt8zwzd839g8hsm9lnu2zpz4mmhrjxs7ws8qdp82pshjetjyp3kset6yppksct4venxzemfwd6x2uccqzysxqyz5vqsp50g8kzcw90cgt7wrpntncql5vtqnwq3eufql8zv2dg9936g4qfjus9qxpqysgq6gmnd3wvhslfrc3mksejpm55sfw3ldk3qw9zukrqdh0kpa4gruc4lu72av0l96mt24jevrxnrd4qj02qnm5tt5dra4eusyjxz2u4prgpxhlfmx"
+        }
+    }
+}

@@ -1,12 +1,11 @@
-from aiohttp import web_exceptions
-from aiohttp.web import middleware, StreamResponse, json_response
+from aiohttp.web import middleware, StreamResponse
+from aiohttp.web_exceptions import HTTPException
 from aiohttp.web_request import Request
 from typing import Awaitable, Callable
 
 
 @middleware
 async def error_handler(request: Request, handler: Callable[[Request], Awaitable[StreamResponse]]) -> StreamResponse:
-    # importer paresseusement le logger central pour éviter les importations circulaires
     import init as hs_init
     log = hs_init.log
     method = request.method
@@ -30,23 +29,8 @@ async def error_handler(request: Request, handler: Callable[[Request], Awaitable
         line.edit_print()
         return response
 
-    except Exception as e:
-        if isinstance(e, web_exceptions.HTTPUnauthorized):
-            line.add_text("HTTP 401")
-            return json_response({"error": "Unauthorized"}, status=401)
-
-        elif isinstance(e, web_exceptions.HTTPNotFound):
-            line.add_text("HTTP 404")
-            return json_response({"error": "Not Found"}, status=404)
-
-        elif isinstance(e, web_exceptions.HTTPBadRequest):
-            line.add_text("HTTP 400")
-            return json_response({"error": str(e.reason)}, status=400)
-
-        else:
-            log.error("Unhandled exception while handling request", request.path)
-            line.add_text("HTTP 500")
-            return json_response({"error": "Internal Server Error"}, status=500)
-    
-    finally:
+    except HTTPException as e:
+        line.add_text("HTTP", e.status_code)
         line.edit_print()
+        log.error("Request error")
+        raise

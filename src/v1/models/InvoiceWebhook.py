@@ -1,7 +1,8 @@
 from dataclasses import dataclass
-from typing import Any, Literal, cast
-from os import getenv
+from typing import Any, Literal
 import hmac, hashlib
+
+from src.settings import settings
 
 
 @dataclass
@@ -19,7 +20,7 @@ class InvoiceWebhook:
 
     def verify(self) -> "InvoiceWebhook":
         received = self.hashed_order
-        calculated = hmac.new(cast(str, getenv("OPENNODE_API_KEY")).encode(), self.id.encode(), hashlib.sha256).hexdigest()
+        calculated = hmac.new(settings.opennode_api_key.encode(), self.id.encode(), hashlib.sha256).hexdigest()
         if received == calculated:
             return self
         raise PermissionError("Signature missmatch")

@@ -3,12 +3,14 @@ from aiohttp.web import StreamResponse
 from aiohttp.web_request import Request
 from typing import Awaitable, Callable
 
+from src.settings import settings
+
 
 def require_auth(handler: Callable[[Request], Awaitable[StreamResponse]]):
     async def wrapper(request: Request):
         token = request.headers.get("Authorization")
 
-        if token != "secret-token":
+        if token != settings.auth_token:
             raise web.HTTPUnauthorized()
 
         return await handler(request)
