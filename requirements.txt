@@ -1,7 +1,9 @@
 aiohttp
 aiohttp_cors
+aiofiles
 python-dotenv
 prisma
 asyncpg
 pytest
 pytest-asyncio
+requests

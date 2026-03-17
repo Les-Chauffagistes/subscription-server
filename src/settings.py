@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     opennode_api_key: str
     opennode_api_url: str
     callback_url: str
-    auth_token: str
+    api_token: str = ""
     server_port: int = 8080
     application_mode: Literal["DEV", "PROD"] = "DEV"
     database_url: str

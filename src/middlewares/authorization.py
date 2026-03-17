@@ -8,9 +8,9 @@ from src.settings import settings
 
 def require_auth(handler: Callable[[Request], Awaitable[StreamResponse]]):
     async def wrapper(request: Request):
-        token = request.headers.get("Authorization")
+        token = request.headers.get("X-Api-Key")
 
-        if token != settings.auth_token:
+        if token != settings.api_token:
             raise web.HTTPUnauthorized()
 
         return await handler(request)

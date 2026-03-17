@@ -9,6 +9,19 @@ generator client {
   recursive_type_depth = 5
 }
 
+enum SubscriptionStatus {
+  inactive
+  active
+  expired
+}
+
+enum InvoiceStatus {
+  pending
+  paid
+  expired
+  cancelled
+}
+
 model SubscriptionRate {
   id         String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   satsPerDay Int                @map("sats_per_day")
@@ -25,7 +38,7 @@ model Subscription {
   poolAddress String                @unique @map("pool_address")
   startedAt   DateTime?             @map("started_at") @db.Timestamptz()
   expiresAt   DateTime?             @map("expires_at") @db.Timestamptz()
-  status      String                @default("inactive")
+  status      SubscriptionStatus    @default(inactive)
   createdAt   DateTime              @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt   DateTime              @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
   invoices    LightningInvoice[]
@@ -47,7 +60,7 @@ model LightningInvoice {
   rateId           String               @map("rate_id") @db.Uuid
   satsPerDay       Int                  @map("sats_per_day")
   durationDays     Int                  @map("duration_days")
-  status           String               @default("pending")
+  status           InvoiceStatus        @default(pending)
   expiresAt        DateTime             @map("expires_at") @db.Timestamptz()
   paidAt           DateTime?            @map("paid_at") @db.Timestamptz()
   createdAt        DateTime             @default(now()) @map("created_at") @db.Timestamptz()
