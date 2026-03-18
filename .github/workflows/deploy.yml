@@ -13,6 +13,12 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5336/chauffagistes_test
       SERVER_PORT: 9087
+      OPENNODE_API_KEY: ${{ secrets.OPENNODE_API_KEY }}
+      OPENNODE_API_URL: dummy
+      CALLBACK_URL: dummy
+      API_TOKEN: dummy
+      APPLICATION_MODE: PROD
+
     steps:
       - uses: actions/checkout@v4
 
