@@ -7,3 +7,4 @@ asyncpg
 pytest
 pytest-asyncio
 requests
+pydantic_settings
