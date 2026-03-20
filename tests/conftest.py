@@ -36,7 +36,7 @@ def _ensure_test_db():
     """Crée la BDD de test et applique le schéma Prisma si nécessaire."""
     db_url = os.environ["DATABASE_URL"]
     db_name = db_url.rsplit("/", 1)[-1].split("?")[0]
-    server_url = db_url.rsplit("/", 1)[0] + "/postgres"
+    server_url = db_url.rsplit("/", 1)[0] + "/template1"
 
     import asyncio
 
@@ -47,6 +47,7 @@ def _ensure_test_db():
                 "SELECT 1 FROM pg_database WHERE datname = $1", db_name
             )
             if not exists:
+                print("creating", db_name)
                 await conn.execute(f'CREATE DATABASE "{db_name}"')
         finally:
             await conn.close()

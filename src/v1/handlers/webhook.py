@@ -25,7 +25,8 @@ async def handle_webhook(request: Request):
 
         invoice = InvoiceWebhook.from_dict(payload).verify()
         db = request.app["prisma"]
-        await process_invoice(db, invoice)
+        result = await process_invoice(db, invoice)
+        log.info("Process result", result, invoice.id)
         return HTTPOk()
     
     except PermissionError:

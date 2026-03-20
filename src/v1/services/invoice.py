@@ -67,6 +67,9 @@ async def create_invoice(
     return invoice
 
 async def process_invoice(db: Prisma, payment_webhook: InvoiceWebhook):
+    if payment_webhook.status == "expired":
+        return True
+    
     await db.opennodewebhooklog.create(
         data={
             "opennodeChargeId": payment_webhook.id,
@@ -81,7 +84,7 @@ async def process_invoice(db: Prisma, payment_webhook: InvoiceWebhook):
     invoice = await db.lightninginvoice.find_unique(where={"id": invoice_id})
     if not invoice or invoice.status != InvoiceStatus.pending:
         log.warn("Invoice not found or already processed")
-        return
+        return False
     
     await db.lightninginvoice.update(
         where={"id": invoice_id},
@@ -89,3 +92,4 @@ async def process_invoice(db: Prisma, payment_webhook: InvoiceWebhook):
     )
 
     await activate_subscription(db, invoice)
+    return True

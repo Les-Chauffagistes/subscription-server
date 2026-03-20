@@ -7,7 +7,8 @@ from unittest.mock import patch, AsyncMock
 
 from src.v1.exceptions import NoPriceException
 from src.v1.models.invoice import Invoice, LightningInvoice, ChainInvoice
-from src.v1.services.invoice import create_invoice
+from src.v1.services.invoice import create_invoice, process_invoice
+from tools.webhook import create_webhook
 
 
 def _make_opennode_invoice(
@@ -250,3 +251,85 @@ async def test_create_invoice_no_duplicate_subscription(db: Prisma):
 
     subs = await db.subscription.find_many(where={"poolAddress": "bc1_dup"})
     assert len(subs) == 1
+
+async def test_process_invoice_fail(db: Prisma):
+    rate = await db.subscriptionrate.find_first(order={"validFrom": "desc"})
+    assert rate is not None
+    sub = await db.subscription.create(data={"poolAddress": "bc1_paid"})
+
+    uuid = uuid4()
+    await db.lightninginvoice.create(
+        data={
+            "id": str(uuid),
+            "amountSats": 500,
+            "createdAt": datetime.now(),
+            "durationDays": 1,
+            "expiresAt": datetime.now(),
+            "opennodeChargeId": "charge-paid",
+            "rateId": rate.id,
+            "satsPerDay": rate.satsPerDay,
+            "paymentRequest": "lnbc_paid",
+            "subscriptionId": sub.id,
+            "status": InvoiceStatus.pending,
+        }
+    )
+
+    from tools.webhook import sign_webhook
+    invoice = sign_webhook(create_webhook(str(uuid)))
+    #assert send_webhook(invoice).status_code <= 300
+    assert await process_invoice(db, invoice)
+    assert (await db.lightninginvoice.find_unique(where={"id": invoice.id})).status == InvoiceStatus.paid # pyright: ignore[reportOptionalMemberAccess]
+
+async def test_process_invoice_success(db: Prisma):
+    rate = await db.subscriptionrate.find_first(order={"validFrom": "desc"})
+    assert rate is not None
+    sub = await db.subscription.create(data={"poolAddress": "bc1_paid"})
+
+    uuid = uuid4()
+    await db.lightninginvoice.create(
+        data={
+            "id": str(uuid),
+            "amountSats": 500,
+            "createdAt": datetime.now(),
+            "durationDays": 1,
+            "expiresAt": datetime.now(),
+            "opennodeChargeId": "charge-paid",
+            "rateId": rate.id,
+            "satsPerDay": rate.satsPerDay,
+            "paymentRequest": "lnbc_paid",
+            "subscriptionId": sub.id,
+            "status": InvoiceStatus.pending,
+        }
+    )
+
+    from tools.webhook import sign_webhook
+    invoice = sign_webhook(create_webhook(str(uuid)))
+    await process_invoice(db, invoice)
+    assert not await process_invoice(db, invoice)
+
+async def test_ignore_expired_invoice_webhook(db: Prisma):
+    rate = await db.subscriptionrate.find_first(order={"validFrom": "desc"})
+    assert rate is not None
+    sub = await db.subscription.create(data={"poolAddress": "bc1_paid"})
+
+    uuid = uuid4()
+    await db.lightninginvoice.create(
+        data={
+            "id": str(uuid),
+            "amountSats": 500,
+            "createdAt": datetime.now(),
+            "durationDays": 1,
+            "expiresAt": datetime.now(),
+            "opennodeChargeId": "charge-paid",
+            "rateId": rate.id,
+            "satsPerDay": rate.satsPerDay,
+            "paymentRequest": "lnbc_paid",
+            "subscriptionId": sub.id,
+            "status": InvoiceStatus.expired,
+        }
+    )
+
+    from tools.webhook import sign_webhook
+    invoice = sign_webhook(create_webhook(str(uuid), "expired"))
+    #assert send_webhook(invoice).status_code <= 300
+    assert await process_invoice(db, invoice)

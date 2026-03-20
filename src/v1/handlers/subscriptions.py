@@ -4,7 +4,6 @@ from init import log
 from datetime import datetime, timezone
 from json import JSONDecodeError
 
-from src.utils import formatter
 from src.v1.mappers import subscription_from_prisma
 
 from ..services.invoice import create_invoice
@@ -44,7 +43,7 @@ async def create_invoice_for_address(request: Request):
             return json_response({"lnurl": invoice.paymentRequest})
         
         else:
-            return json_response({"invoice": invoice.lightning_invoice.payreq})
+            return json_response({"lnurl": invoice.lightning_invoice.payreq})
 
 
     except JSONDecodeError:
@@ -70,7 +69,7 @@ async def get_rate(request: Request):
 async def get_all_active_subscriptions(request: Request):
     db = request.app["prisma"]
     subscriptions = await get_all_subscriptions(db)
-    return json_response([subscription_from_prisma(subscription).to_dict() for subscription in subscriptions])
+    return json_response([subscription_from_prisma(subscription).model_dump(mode='json') for subscription in subscriptions])
 
 @routes.get("/{address}/subscription")
 async def get_address_subsription(request: Request):
@@ -79,4 +78,4 @@ async def get_address_subsription(request: Request):
     if subscription == None:
         raise HTTPNotFound
 
-    return json_response(subscription_from_prisma(subscription).to_dict())
+    return json_response(subscription_from_prisma(subscription).model_dump(mode='json'))
