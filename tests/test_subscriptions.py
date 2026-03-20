@@ -26,8 +26,8 @@ async def test_get_current_subscription_not_found(db: Prisma):
 
 async def test_get_all_subscriptions_active_only(db: Prisma):
     """Ne retourne que les abonnements actifs et non expirés."""
-    future = datetime.now() + timedelta(days=30)
-    past = datetime.now() - timedelta(days=1)
+    future = datetime.now(timezone.utc) + timedelta(days=30)
+    past = datetime.now(timezone.utc) - timedelta(days=1)
 
     await db.subscription.create(
         data={"poolAddress": "bc1_active", "status": SubscriptionStatus.active, "expiresAt": future}

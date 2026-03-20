@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from prisma import Json, Prisma
 from prisma.enums import InvoiceStatus
@@ -53,9 +53,9 @@ async def create_invoice(
         data={
             "id": invoice.id,
             "amountSats": invoice.amount,
-            "createdAt": datetime.fromtimestamp(invoice.created_at),
+            "createdAt": datetime.fromtimestamp(invoice.created_at, tz=timezone.utc),
             "durationDays": invoice.ttl // 1440,
-            "expiresAt": datetime.fromtimestamp(invoice.lightning_invoice.expires_at),
+            "expiresAt": datetime.fromtimestamp(invoice.lightning_invoice.expires_at, tz=timezone.utc),
             "opennodeChargeId": invoice.id,
             "rateId": ratting.id,
             "satsPerDay": ratting.satsPerDay,

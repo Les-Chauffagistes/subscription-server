@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import uuid4
 from prisma import Prisma
 from prisma.enums import InvoiceStatus
@@ -15,7 +15,7 @@ def _make_opennode_invoice(
     amount: int = 500,
     payreq: str = "lnbc500test",
 ) -> Invoice:
-    now = int(datetime.now().timestamp())
+    now = int(datetime.now(timezone.utc).timestamp())
     charge_id = charge_id or str(uuid4())
     return Invoice(
         id=charge_id,
@@ -127,9 +127,9 @@ async def test_create_invoice_reuses_pending(db: Prisma):
         data={
             "id": str(uuid4()),
             "amountSats": 500,
-            "createdAt": datetime.now(),
+            "createdAt": datetime.now(timezone.utc),
             "durationDays": 1,
-            "expiresAt": datetime.now(),
+            "expiresAt": datetime.now(timezone.utc),
             "opennodeChargeId": "charge-reuse",
             "rateId": rate.id,
             "satsPerDay": rate.satsPerDay,
@@ -162,9 +162,9 @@ async def test_create_invoice_different_amount_creates_new(db: Prisma):
         data={
             "id": str(uuid4()),
             "amountSats": 500,
-            "createdAt": datetime.now(),
+            "createdAt": datetime.now(timezone.utc),
             "durationDays": 1,
-            "expiresAt": datetime.now(),
+            "expiresAt": datetime.now(timezone.utc),
             "opennodeChargeId": "charge-diff-amount",
             "rateId": rate.id,
             "satsPerDay": rate.satsPerDay,
@@ -204,9 +204,9 @@ async def test_create_invoice_ignores_paid_invoice(db: Prisma):
         data={
             "id": str(uuid4()),
             "amountSats": 500,
-            "createdAt": datetime.now(),
+            "createdAt": datetime.now(timezone.utc),
             "durationDays": 1,
-            "expiresAt": datetime.now(),
+            "expiresAt": datetime.now(timezone.utc),
             "opennodeChargeId": "charge-paid",
             "rateId": rate.id,
             "satsPerDay": rate.satsPerDay,

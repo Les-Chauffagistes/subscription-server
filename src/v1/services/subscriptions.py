@@ -1,16 +1,14 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from asyncpg import Pool
 from prisma import Prisma
 from prisma.enums import SubscriptionStatus
 from prisma.models import LightningInvoice
 
-from src.v1.models import InvoiceWebhook
 
 async def get_all_subscriptions(db: Prisma):
     return await db.subscription.find_many(
         where={
-            "expiresAt": {"gt": datetime.now()},
+            "expiresAt": {"gt": datetime.now(timezone.utc)},
             "status": SubscriptionStatus.active,
         }
     )
@@ -35,7 +33,7 @@ def compute_extension(
     now: datetime | None = None,  # injectable pour les tests
 ) -> ExtensionResult:
     if now is None:
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
 
     # Jamais lésé : on part du MAX entre l'expiration actuelle et maintenant
     extended_from = max(expires_at, now) if expires_at else now

@@ -1,10 +1,11 @@
 from prisma.models import LightningInvoice
 
 from init import log
-from datetime import datetime
+from datetime import datetime, timezone
 from json import JSONDecodeError
 
 from src.utils import formatter
+from src.v1.mappers import subscription_from_prisma
 
 from ..services.invoice import create_invoice
 from ..services.subscriptions import get_all_subscriptions, get_current_subscription_for_address
@@ -20,6 +21,7 @@ from aiohttp.web import json_response, HTTPNotFound, HTTPBadRequest, HTTPService
 log.debug("importing subscriptions handlers")
 @routes.post("/{address}/subscribe")
 async def create_invoice_for_address(request: Request):
+    # TODO: Ajouter un paramètre pour forcer la création d'une nouvelle invoice même s'il en existe déjà une utilisable
     try:
         address = request.match_info["address"]
         payload: dict = await request.json()
@@ -33,7 +35,7 @@ async def create_invoice_for_address(request: Request):
             db=db,
             address=address,
             amount=amount,
-            order_id=hex(int(datetime.now().timestamp()))[2:],
+            order_id=hex(int(datetime.now(timezone.utc).timestamp()))[2:],
             description=payload.get("description"),
             ttl=payload.get("ttl"),
         )
@@ -68,7 +70,7 @@ async def get_rate(request: Request):
 async def get_all_active_subscriptions(request: Request):
     db = request.app["prisma"]
     subscriptions = await get_all_subscriptions(db)
-    return json_response(list(formatter.format_rows(subscriptions)))
+    return json_response([subscription_from_prisma(subscription).to_dict() for subscription in subscriptions])
 
 @routes.get("/{address}/subscription")
 async def get_address_subsription(request: Request):
@@ -77,4 +79,4 @@ async def get_address_subsription(request: Request):
     if subscription == None:
         raise HTTPNotFound
 
-    return json_response(formatter.format_row(subscription))
+    return json_response(subscription_from_prisma(subscription).to_dict())
