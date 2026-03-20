@@ -1,6 +1,6 @@
 from typing import cast
 from prisma.models import Subscription as PrismaSubscription
-from subscription_types.subscription import Subscription, SubscriptionStatus
+from subscription_types.models import Subscription, SubscriptionStatus
 
 
 def subscription_from_prisma(model: PrismaSubscription) -> Subscription:
