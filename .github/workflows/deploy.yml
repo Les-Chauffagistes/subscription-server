@@ -14,8 +14,8 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5336/chauffagistes_test
       SERVER_PORT: 9087
       OPENNODE_API_KEY: ${{ secrets.OPENNODE_API_KEY }}
-      OPENNODE_API_URL: dummy
-      CALLBACK_URL: dummy
+      OPENNODE_API_URL: https://api.opennode.com
+      CALLBACK_URL: ${{ secrets.CALLBACK_URL }}
       API_TOKEN: dummy
       APPLICATION_MODE: PROD
 
