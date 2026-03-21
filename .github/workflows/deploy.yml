@@ -5,13 +5,13 @@ on:
     branches: [main, cicd-test]
 
 env:
-  IMAGE_NAME: hash-contenders-referee
+  IMAGE_NAME: subscription-server
 
 jobs:
   test:
     runs-on: [self-hosted, macOS]
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5336/chauffagistes_test
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5336/subscription_test
       SERVER_PORT: 9087
       OPENNODE_API_KEY: ${{ secrets.OPENNODE_API_KEY }}
       OPENNODE_API_URL: https://api.opennode.com
@@ -29,7 +29,7 @@ jobs:
             --name pg-test \
             -e POSTGRES_USER=postgres \
             -e POSTGRES_PASSWORD=postgres \
-            -e POSTGRES_DB=chauffagistes_test \
+            -e POSTGRES_DB=subscription_test \
             -p 5336:5432 \
             postgres:18.1-alpine3.23
           until docker exec pg-test pg_isready -U postgres; do
