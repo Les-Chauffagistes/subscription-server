@@ -1,0 +1,1 @@
+[![Quality Gate Status](https://sonar.swakraft.fr/api/project_badges/measure?project=subscription-server&metric=alert_status&token=sqb_022b6e75e61767b3a99c5b3688d86531c9a92f9b)](https://sonar.swakraft.fr/dashboard?id=subscription-server)
