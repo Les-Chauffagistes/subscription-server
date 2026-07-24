@@ -1,5 +1,6 @@
 aiohttp
 aiohttp_cors
+loguru
 python-dotenv
 prisma
 asyncpg
